@@ -8,33 +8,39 @@ import (
 )
 
 func PingHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	start := time.Now()
 	value := r.Header.Get("X-Request-ID")
+	now := time.Now().UTC().Format(time.RFC3339)
 	var full map[string]any
 	if value == "" {
-		full = map[string]any{"time": start}
+		full = map[string]any{"time": now}
 	} else {
-		full = map[string]any{"time": start, "value": value}
+		full = map[string]any{"time": now, "value": value}
 	}
 	if err := json.NewEncoder(w).Encode(full); err != nil {
-		panic(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 func HealthHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	status := map[string]interface{}{"status": "ok"}
 	if err := json.NewEncoder(w).Encode(status); err != nil {
-		panic(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
 }
 
 func LongPooling(w http.ResponseWriter, r *http.Request) {
-	_, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	w.Header().Set("Content-Type", "application/json")
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
-	time.Sleep(6 * time.Second)
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("long pooling"))
+	select {
+	case <-time.After(5 * time.Second):
+		w.WriteHeader(http.StatusServiceUnavailable)
+	case <-ctx.Done():
+		return
+	}
 }

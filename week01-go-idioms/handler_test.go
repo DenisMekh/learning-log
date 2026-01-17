@@ -21,6 +21,9 @@ func TestHealthHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
+	if ct := rr.Header().Get("Content-Type"); ct != "application/json" {
+		t.Errorf("unexpected content-type: %s", ct)
+	}
 }
 
 func TestPingHandler(t *testing.T) {
@@ -35,18 +38,18 @@ func TestPingHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
+	if ct := rr.Header().Get("Content-Type"); ct != "application/json" {
+		t.Errorf("unexpected content-type: %s", ct)
+	}
 }
 
 func TestLongPooling(t *testing.T) {
 	deadline := time.Now().Add(time.Second * 5)
 	ctx, cancel := context.WithDeadline(t.Context(), deadline)
 	defer cancel()
-	time.Sleep(time.Until(deadline))
-	req, err := http.NewRequest("GET", "/long", nil)
+	req, _ := http.NewRequest("GET", "/long", nil)
+	req = req.WithContext(ctx)
 	if err := ctx.Err(); !errors.Is(err, context.DeadlineExceeded) {
-		t.Fatal(err)
-	}
-	if err != nil {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
