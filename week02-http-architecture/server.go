@@ -24,6 +24,8 @@ func NewServer(router http.Handler) *Server {
 
 func NewRouter(handler Handler) *chi.Mux {
 	r := chi.NewRouter()
+	r.Use(RequestIDMiddleware)
+	r.Use(LoggingMiddleware)
 	r.Post("/health", handler.Health)
 	r.Post("/ping", handler.Ping)
 	r.Post("/long", handler.SomeLong)
