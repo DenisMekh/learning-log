@@ -28,14 +28,17 @@ func (h *Handler) SomeLong(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	var number int
 	for i := 0; i < 10_000_000; i++ {
-		number++
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(time.Second):
+			WriteJSON(http.StatusOK, []byte(`{"message": "ok", "number": "someNumber"}`), w)
+
+		default:
+			number++
+		}
 	}
-	select {
-	case <-time.After(time.Second):
-		WriteJSON(http.StatusOK, []byte(`{"message": "ok", "number": "someNumber"}`), w)
-	case <-ctx.Done():
-		WriteJSON(http.StatusInternalServerError, []byte(`{"message": "context deadline exceeded"}`), w)
-	}
+
 }
 
 func WriteJSON(status int, data interface{}, w http.ResponseWriter) {
@@ -44,4 +47,5 @@ func WriteJSON(status int, data interface{}, w http.ResponseWriter) {
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		log.Println(err)
 	}
+
 }
