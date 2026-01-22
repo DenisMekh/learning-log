@@ -41,6 +41,10 @@ func (h *Handler) SomeLong(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (h *Handler) SomeError(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, ErrNotFound.Error(), http.StatusNotFound)
+}
+
 func WriteJSON(status int, data interface{}, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
