@@ -44,7 +44,7 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 		requestID := GetRequestID(r.Context())
 		url := r.URL.String()
 		next.ServeHTTP(fw, r)
-		log.Printf("%s\t%s\t%s\t%s\t%s", r.Method, url, fw.statusCode, time.Since(start), requestID)
+		log.Printf("%s\t%s\t%d\t%s\t%s", r.Method, url, fw.statusCode, time.Since(start), requestID)
 	})
 }
 

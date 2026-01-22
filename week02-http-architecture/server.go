@@ -26,9 +26,11 @@ func NewRouter(handler Handler) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(RequestIDMiddleware)
 	r.Use(LoggingMiddleware)
+	r.Use(ErrorMiddleware)
 	r.Post("/health", handler.Health)
 	r.Post("/ping", handler.Ping)
 	r.Post("/long", handler.SomeLong)
+	r.Post("/error", handler.SomeError)
 	return r
 }
 
